@@ -1,21 +1,38 @@
 #!/usr/bin/perl -w
-
+# This utility downloads .deb packages and
+#  all their dependencies from a repository
+#  and expands them into a selectable staging directory 
+#  (defaults to) staging/rootfs. The code keeps 
+#  track internally of what has been downloaded, to avoid getting
+#  caught up in a dependency loop. However, there is no external record
+#  of what has been downloaded, and nor is anything cached. Therefore,
+#  it makes sense to specify as large a number of packages on the 
+#  command line as possible, to avoid duplication.
+#
+#  Note that this utility does not download the Packages file -- you
+#   need to get the version appropriate for your distribution and 
+#   Raspbian release. At the time of writing, the latest release for
+#   ARM was Raspian 'Buster', and the Packages file is here:
+#
+#  http://archive.raspbian.org/raspbian/dists/buster/main/binary-armhf/Packages
+#
 use strict;
 
-# Raspbian release
-my $release = "buster";
-
-# Relative directory where packages will be expanded
-my $staging = "staging/rootfs";
-
+my $staging = $ENV{'ROOTFS'};
+my $tmp = $ENV{'TMP'};
+my $release = $ENV{'RASPBIAN_RELEASE'};
+                    
 # Base URL for the repository
 my $base ="http://archive.raspbian.org/raspbian";
 
 # Work out where the Packages file is for the specified distribution
-my $remote_packages = "$base/dists/$release/main/binary-armhf/Packages";
+my $remote_packages = "$base/dists/$release/main/binary-armhf/Packages.gz";
 
 # This is the local Packages file
-my $packages = "Packages";
+my $packages = "$tmp/Packages";
+
+# This is the local compressed Packages file
+my $packagescomp = "$tmp/Packages.gz";
 
 if (-f $packages)
   {
@@ -24,7 +41,8 @@ if (-f $packages)
 else
   {
   print ("Downloading $packages from $remote_packages\n");
-  system ("curl -L -o $packages $remote_packages");
+  system ("curl -L -o $packagescomp $remote_packages");
+  system ("gunzip $packagescomp");
   }
 
 my @downloaded_debs = ();
@@ -77,7 +95,7 @@ sub find_package_in_index ($)
     }
   else
     {
-printf ("returning empty\n");
+    printf ("returning empty\n");
     return ("", "");
     }
   }

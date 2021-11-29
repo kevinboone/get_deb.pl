@@ -43,5 +43,5 @@ I would have thought that downloading from a 'foreign' repository like this was
 a relatively common-place operation, and that the regular `apt-get` would be
 able to do it. If it can, I can't figure out how.
 
-At the time of writing, the latest Rasbpian release was 'Buster'.
+At the time of writing, the latest Rasbpian release was 'Bookworm'.
 
